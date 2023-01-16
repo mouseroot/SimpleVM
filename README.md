@@ -21,7 +21,7 @@ JMP - Jump to location
 
 RET - Jump to location at sp
 
-JZ - Jump if Zero Flag
+JZ - Jump if Zero Flag set
 
 JNZ - Jump if Zero Flag not set
 
