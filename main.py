@@ -208,6 +208,7 @@ class SimpleVM:
                 #get operands
                 location = self.fetch()
                 if not self.flags[ZF]:
+                    print(f"Jumping(NOT ZF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -216,6 +217,7 @@ class SimpleVM:
                 #get operands
                 location = self.fetch()
                 if self.flags[ZF]:
+                    print(f"Jumping(ZF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -284,8 +286,9 @@ class SimpleVM:
 
 program = [
     LOAD, R0, 10, # load r0, 10
-    LOAD, R1, 10,
+    LOAD, R1, 11,
     CMP, R1, R0,
+    JZ, 0,
     DBG,
     BRK
 ]
