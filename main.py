@@ -204,6 +204,22 @@ class SimpleVM:
                 #input("Enter to continue..")
                 #self.debug()
 
+            elif instruction == JNZ:
+                #get operands
+                location = self.fetch()
+                if not self.flags[ZF]:
+                    self.ip = location
+                else:
+                    pass
+
+            elif instruction == JZ:
+                #get operands
+                location = self.fetch()
+                if self.flags[ZF]:
+                    self.ip = location
+                else:
+                    pass
+
             elif instruction == ADD: # add instruction
                 #get operands
                 dest = self.fetch()
