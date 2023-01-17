@@ -62,6 +62,7 @@ ENTER = 90
 LEAVE = 91
 BRK = 99
 DBG = 100
+NOP = 255
 
 
 opcodes = {
@@ -208,6 +209,9 @@ class SimpleVM:
                 #input("Enter to continue..")
                 #self.debug()
 
+            elif instruction == NOP:
+                pass
+
             elif instruction == RET:
                 location = self.popValue()
                 self.ip = location
@@ -248,7 +252,6 @@ class SimpleVM:
                 if sum <= 0:
                     self.flags[ZF] = True
                     print("Zero flag was set")
-
                 self.registers[dest] = sum
 
             elif instruction == PUSH: #push instruction
@@ -266,8 +269,6 @@ class SimpleVM:
                 self.registers[dest] = value
                 print(f"Popping value ({value})")
                 
-
-
             elif instruction == PUSHR:
                 #get operands
                 dest = self.fetch()
