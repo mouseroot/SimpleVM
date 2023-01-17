@@ -1,4 +1,5 @@
 """
+
 VM Overview
 ---------------------------
 LOAD - Load a value
@@ -19,6 +20,7 @@ ENTER - push all registers
 LEAVE - pop all registers
 BRK - Break
 DBG - Print Debug info
+
 --------------------------
 Registers:
 R0 - Register 0
@@ -35,6 +37,7 @@ ZF - Zero Flag
 -------------------------
 Enter Frame
 Push Registers R0 through R3
+
 -------------------------
 Leave Frame
 Pop Registers R3 through R0
@@ -59,6 +62,7 @@ ENTER = 90
 LEAVE = 91
 BRK = 99
 DBG = 100
+
 
 opcodes = {
     LOAD: "Load",
@@ -204,6 +208,11 @@ class SimpleVM:
                 #input("Enter to continue..")
                 #self.debug()
 
+            elif instruction == RET:
+                location = self.popValue()
+                self.ip = location
+                print(f"Returning to {location}")
+
             elif instruction == JNZ:
                 #get operands
                 location = self.fetch()
@@ -285,10 +294,8 @@ class SimpleVM:
 
 
 program = [
-    LOAD, R0, 10, # load r0, 10
-    LOAD, R1, 11,
-    CMP, R1, R0,
-    JZ, 0,
+    PUSH, 4,
+    RET,
     DBG,
     BRK
 ]
