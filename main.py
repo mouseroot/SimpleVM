@@ -34,6 +34,7 @@ SP - Stack Pointer
 Flags:
 EF - Equal Flag
 ZF - Zero Flag
+DF - Direction Flag
 
 -------------------------
 Enter Frame
@@ -242,6 +243,15 @@ class SimpleVM:
                 #input("Enter to continue..")
                 #self.debug()
 
+            elif instruction == CALL:
+                #get operands
+                self.push_value(self.ip+1) #store IP + 1 on stack
+                location = self.fetch()
+                self.ip = location
+                if self.verbose_debug:
+                    print(f"Calling function at {location}")
+                
+
             elif instruction == NOP:
                 pass
 
@@ -376,21 +386,30 @@ class SimpleVM:
 
 
 program = [
-    LOAD, R0, 0,
+    LOAD, R0, 0, 
     LOAD, R1, 5,
     INC, R0,
-    CMP, R0, R1,
-    JE,15,
-    JNE,6,
-    DBG,
+    CMP, R0, R1, #if R0 == R1
+    JE,15,       # jump to 300(func_program)
+    JNE,6,       # else jump to INC
+    JMP, 300,
     JMP, 0,
     BRK
 ]
 
+func_program = [
+    ENTER,
+    LOAD, R3, 45,
+    DBG,
+    LEAVE,
+    JMP, 19
+]
 
 
 vm = SimpleVM(memory_size=1024,stack_location=900)
 vm.load_program(program)
+vm.load_program_at(300,func_program)
+vm.verbose_debug = True
 try:
     vm.run()
 except IndexError:
