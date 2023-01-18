@@ -104,16 +104,16 @@ ZF = 1 #zero flag
 
 
 class SimpleVM:
-    def __init__(self,memory_size=100):
+    def __init__(self,memory_size=100,stack_location=75):
         self.memory = [0] * memory_size # 100 bytes of memory
         self.registers = [0] * 5 # 5 registers
         self.ip = 0 # instruction pointer
-        self.registers[SP] = 75 # stack pointer
+        self.registers[SP] = stack_location # stack pointer
         self.flags = [0] * 2
 
 
-    def load_program(self, program):
-        for i, instruction in enumerate(program):
+    def load_program(self, source):
+        for i, instruction in enumerate(source):
             self.memory[i] = instruction
 
     def display_memory(self):
@@ -131,7 +131,7 @@ class SimpleVM:
 
     def display_stack(self):
         print("Stack: ")
-        for index, value in enumerate(self.memory[self.getSP()-1::-1]):
+        for index, value in enumerate(self.memory[self.get_stackpointer()-1::-1]):
             print(f"{value:02} ",end="")
             if (index+1) % 8 == 0:
                 print()
@@ -140,7 +140,7 @@ class SimpleVM:
 
     def debug(self):
         print("Registers: ", self.registers)
-        print("SP: ",self.getSP())
+        print("SP: ",self.get_stackpointer())
         self.print_flags()
         self.display_stack()
 
@@ -149,30 +149,30 @@ class SimpleVM:
         self.ip += 1
         return value
 
-    def getSP(self):
+    def get_stackpointer(self):
         return self.registers[SP]
 
-    def popValue(self):
+    def pop_value(self):
         self.registers[SP] -= 1
-        value = self.memory[self.getSP()]
+        value = self.memory[self.get_stackpointer()]
         return value
 
-    def pushValue(self, value):
-        self.memory[self.getSP()] = value
+    def push_value(self, value):
+        self.memory[self.get_stackpointer()] = value
         self.registers[SP] += 1
         
 
     def enter_frame(self):
-        self.pushValue(self.registers[R0])
-        self.pushValue(self.registers[R1])
-        self.pushValue(self.registers[R2])
-        self.pushValue(self.registers[R3])
+        self.push_value(self.registers[R0])
+        self.push_value(self.registers[R1])
+        self.push_value(self.registers[R2])
+        self.push_value(self.registers[R3])
 
     def leave_frame(self):
-        self.registers[R3] = self.popValue()
-        self.registers[R2] = self.popValue()
-        self.registers[R1] = self.popValue()
-        self.registers[R0] = self.popValue()
+        self.registers[R3] = self.pop_value()
+        self.registers[R2] = self.pop_value()
+        self.registers[R1] = self.pop_value()
+        self.registers[R0] = self.pop_value()
 
     def debug_prompt(self):
         while 1:
@@ -230,7 +230,7 @@ class SimpleVM:
                 pass
 
             elif instruction == RET:
-                location = self.popValue()
+                location = self.pop_value()
                 self.ip = location
                 print(f"Returning to {location}")
 
@@ -291,7 +291,7 @@ class SimpleVM:
             elif instruction == PUSH: #push instruction
                 #get operands
                 value = self.fetch()
-                self.memory[self.getSP()] = value
+                self.memory[self.get_stackpointer()] = value
                 print(f"Pushing {value}")
                 self.registers[SP] += 1
 
@@ -299,14 +299,14 @@ class SimpleVM:
                 #get operands
                 dest = self.fetch()
                 self.registers[SP] -= 1
-                value = self.memory[self.getSP()]
+                value = self.memory[self.get_stackpointer()]
                 self.registers[dest] = value
                 print(f"Popping value ({value})")
                 
             elif instruction == PUSHR:
                 #get operands
                 dest = self.fetch()
-                self.memory[self.getSP()] = self.registers[dest]
+                self.memory[self.get_stackpointer()] = self.registers[dest]
                 print(f"Pushing register R{dest}({self.registers[dest]})")
                 self.registers[SP] += 1
 
