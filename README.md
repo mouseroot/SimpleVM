@@ -3,68 +3,96 @@
 A very basic Virtual Machine written in python
 
 ## Basic instruction Set
+Instructions are read as the following:
+- INSTRUCTION A,B
+- INSTRUCTION A
+- INSTRUCTION
+
 ---
-LOAD - Load a value
+LOAD 
+- Loads an immediate(integer) value into the specified register
 ```
     load R0,100
 ```
 
-MOV - Move register A into B
+MOV 
+- Move register A into B
+- Copies the value from B
+- Stores the value into A
 ```
     mov R0, R1
 ```
-ADD - Add registers
+ADD 
+- Adds two registers together
+- (A = A + B)
+- Stores the sum into A 
 ```
     add R0, R1
 ```
-SUB - Subtract registers
+SUB 
+- Subtracts two registers
+- (A = A - B)
+- Store the sum into A
 ```
     sub R0, R1
 ```
-INC - Increase register
+INC 
+- Increase register by 1
 ```
     inc R0
 ```
-DEC - Decrease register
+DEC 
+- Decrease register by 1
 ```
     dec R2
 ```
-BRK - Break
+BRK 
+- Stops execution by breaking out of the main loop
 ```
     brk
 ```
-DBG - Print Debug info
+DBG 
+- Drop into debug shell
 ```
     dbg
 ```
-IR - Invoke Interrupt
+IR 
+- Invoke interrupt
 ```
     IR PRINT_STRING
 ```
 
 ## Conditional Instrucutions
 ---
-JMP - Jump to location
+JMP 
+- Jump to location
+- Sets IP to the location
 ```
     jmp 231
 ```
-JZ - Jump if Zero Flag set
+JZ 
+- Jump if Zero Flag set
 ```
     jz 124
 ```
-JNZ - Jump if Zero Flag not set
+JNZ 
+- Jump if Zero Flag not set
 ```
     jnz 122
 ```
-JE - Jump if Equal Flag set
+JE 
+- Jump if Equal Flag set
 ```
     je 312
 ```
-JNE - Jump if Equal Flag not set
+JNE 
+- Jump if Equal Flag not set
 ```
     jne 130
 ```
-CMP - Compare registers and set zero flag and equal flag
+CMP 
+- Compare registers and set zero flag and equal flag
+- Checks if the registers are equal
 ```
     cmp R0,R3
 ```
@@ -72,93 +100,121 @@ CMP - Compare registers and set zero flag and equal flag
 
 ## Subroutine instructions
 ---
-ENTER - push all registers
+ENTER 
+- push all registers
+- Pushes R0 through R3 to the stack
 ```
     enter
     ...
 ```
-LEAVE - pop all registers
+LEAVE 
+- pop all registers
+- Pops values off the stack into R3 to R0
 ```
     ...
     leave
 ```
-CALL - Runs a function and returns to the location from where it was called from, it does this by storing the location AFTER the call to return to when the RET instruction is read.
+CALL 
+- Runs a function and returns to the location from where it was called from
+- stores the location AFTER the call to the memory location the stack pointer is pointing to
 ```
     call 456
 ```
-RET - Jump to location at stack pointer
+RET 
+- Jump to location at stack pointer
 ```
     ...
     ret
 ```
 ## Stack instructions
 ---
-PUSH - Push immediate value
+PUSH 
+- Push immediate value
 ```
     push 1337
 ```
-PUSHR - Push register
+PUSHR
+ - Push register
 ```
     pushr R0
 ```
-POP - Pop value off stack into register
+POP 
+- Pop value off stack into register
 ```
     pop R0
 ```
 
 ## Flag Instructions
 ---
-CDF - Change Direction Flag
+CDF 
+- Change Direction Flag
 ```
     CDF 0
 ```
-CLF - Clear Flags
+CLF 
+- Clear Flags
 ```
     CLF
 ```
 
 # Registers
 
-R0 - Register 0 or A
+R0 
+- Register 0 or A
 ```
     A general purpose register
 ```
 
-R1 - Register 1 or B
+R1 
+- Register 1 or B
 ```
     A general purpose register
 ```
-R2 - Register 2 or C
+R2 
+- Register 2 or C
 ```
     GPR, Counter
 ```
 
-R3 - Register 3 or D
+R3 
+- Register 3 or D
 ```
     GPR, Return Value
 ```
-SP - Stack Pointer
+SP 
+- Stack Pointer
 ```
     Stack Pointer only
 ```
+IP
+- Instruction Pointer
+```
+    The location in memory the program is currently reading from
+    Cannot be modified using MOV or LOAD instructions,
+    
+    JMP sets the IP to the Operand and is one of the only ways of
+    directly setting the IP
+```
 
+# Flags
 
-# Flags:
-
-EF - Equal Flag
+EF 
+- Equal Flag
 ```
     Set by the CMP instruction
     
     This is used to determine if a conditional jump is made or not
 ```
-ZF - Zero Flag
+ZF 
+- Zero Flag
 ```
     Set by the CMP and DEC instructions
     
     This is used to determine if a conditional jump is made or not
 ```
 
-DF - Direction Flag
+DF 
+- Direction Flag
 ```
     Set by the CDF instruction (Change Direction Flag)
     
@@ -200,8 +256,8 @@ When the DBG instruction is read the virtual machine drops into a command line s
 - Dump memory to file - d or dump <filename>
 
 ```
-DEBUG MODE
-Debug:11>
+    DEBUG MODE
+    Debug:11>
 ```
 The command line shows the current instruction pointer and which mode the VM is currently in
 # Examples
