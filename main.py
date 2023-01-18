@@ -71,7 +71,12 @@ CLF = 93
 BRK = 99
 DBG = 100
 NOP = 255
+IR = 7
 
+PRINT_CHAR = 1
+PRINT_STRING = 2
+
+READ_LINE = 3
 
 opcodes = {
     LOAD: "Load",
@@ -81,6 +86,7 @@ opcodes = {
     INC: "Increase",
     DEC: "Decrease",
     BRK: "Break",
+    IR: "Interrupt",
 
     DBG: "Debug",
     CMP: "Compare",
@@ -111,9 +117,9 @@ SP = 4
 
 NULL = 0
 
-EF = 0 #equal flag
-ZF = 1 #zero flag
-DF = 2 #direction flag
+EF = EQUAL_FLAG =  0 #equal flag
+ZF = ZERO_FLAG =  1 #zero flag
+DF = DIR_FLAG =  2 #direction flag
 
 
 
@@ -148,6 +154,24 @@ class SimpleVM:
             if (index+1) % 3 == 0:
                 print()
         print()
+
+    def call_interupt(self, interupt_id):
+        if interupt_id == PRINT_CHAR:
+            ch = self.memory[self.get_stackpointer()]
+            print(chr(ch),end='')
+        elif interupt_id == PRINT_STRING:
+            i = 0
+            ch = self.memory[self.get_stackpointer() + i]
+            while ch != NULL:
+                ch = self.memory[self.get_stackpointer() + i]
+                print(chr(ch),end='')
+                i += 1
+            print()
+        elif interupt_id == READ_LINE:
+            input_line = input("? ")
+            self.write_string_at(self.get_stackpointer(),input_line)
+            self.registers[SP] += len(input_line)
+
 
     def print_flags(self):
         print("Flags: ")
@@ -230,6 +254,12 @@ class SimpleVM:
             elif instruction == DBG:
                 print("DEBUG MODE")
                 self.debug_prompt()
+
+            elif instruction == IR:
+                i_id = self.fetch()
+                self.call_interupt(i_id)
+                if self.verbose_debug:
+                    print(f"Intterupt {i_id}")
 
             elif instruction == CMP:
                 #get operands
@@ -405,13 +435,10 @@ class SimpleVM:
 
 
 program = [
-    LOAD, R0, 0, 
-    LOAD, R1, 5,
-    INC, R0,
-    CMP, R0, R1, #if R0 == R1
-    JE,15,       # jump to 300(func_program)
-    JNE,6,       # else jump to INC
-    CALL, 300,
+    MOV, R0, SP, #Move the stack pointer into R0
+    IR,READ_LINE,   #Read input
+    MOV, SP, R0,    #Restore stack pointer from R0
+    IR, PRINT_STRING,   #Call print string
     DBG,
     BRK
 ]
@@ -419,18 +446,18 @@ program = [
 func_program = [
     ENTER,
     LOAD, R3, 45,
-    DBG,
+    NOP,
     LEAVE,
     RET
 ]
 
 
-vm = SimpleVM(memory_size=1024,stack_location=900)
+vm = SimpleVM(memory_size=1024,stack_location=700)
 #vm.load_program(program)
 #vm.load_program_at(300,func_program)
-vm.write_string_at(0,"SimpleVM")
-print(vm.memory[0:15])
-vm.verbose_debug = True
+vm.load_program(program)
+vm.write_string_at(150,"SimpleVM")
+vm.verbose_debug = False
 try:
     vm.run()
 except IndexError:
