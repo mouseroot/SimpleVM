@@ -204,8 +204,13 @@ class SimpleVM:
                 #get operands
                 dest = self.fetch()
                 src = self.fetch()
+                print(f"Compare: R{dest} vs. R{src}")
                 if self.registers[dest] == self.registers[src]:
+                    self.flags[EF] = True
+                    print(f"CMP: EF Set")
+                if self.registers[src] == 0:
                     self.flags[ZF] = True
+                    print(f"CMP ZF Set")
 
             elif instruction == MOV:
                 dest = self.fetch()
@@ -263,6 +268,7 @@ class SimpleVM:
                     print(f"Jumping (Not EF) to {pos}")
                 else:
                     pass
+
             elif instruction == ADD: # add instruction
                 #get operands
                 dest = self.fetch()
@@ -312,6 +318,7 @@ class SimpleVM:
             elif instruction == ENTER:
                 print("Enter Frame(Push all Registers)")
                 self.enter_frame()
+
             elif instruction == LEAVE:
                 print("Exit Frame (Pop all Registers)")
                 self.leave_frame()
@@ -323,9 +330,6 @@ class SimpleVM:
 
 
 program = [
-    NOP,
-    PUSH, 4,
-    RET,
     DBG,
     BRK
 ]
