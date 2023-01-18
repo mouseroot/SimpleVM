@@ -116,6 +116,10 @@ class SimpleVM:
         for i, instruction in enumerate(source):
             self.memory[i] = instruction
 
+    def load_program_at(self, start_position, source):
+        for i, instruction in enumerate(source):
+            self.memory[start_position + i] = instruction
+
     def display_memory(self):
         print("Memory: ")
         for index,value in enumerate(self.memory):
@@ -182,6 +186,8 @@ class SimpleVM:
             command = commands[0]
             if command == "continue" or command == "c":
                 break
+            elif command == "registers" or command == "r":
+                print(f"Registers: {self.registers}")
             else:
                 print(f"Unknown command ({command})")
 
@@ -359,7 +365,9 @@ program = [
     BRK
 ]
 
-vm = SimpleVM()
+
+
+vm = SimpleVM(memory_size=1024,stack_location=900)
 vm.load_program(program)
 try:
     vm.run()
