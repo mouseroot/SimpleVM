@@ -20,6 +20,7 @@ ENTER - push all registers
 LEAVE - pop all registers
 BRK - Break
 DBG - Print Debug info
+CALL - Execute function
 
 --------------------------
 Registers:
@@ -54,6 +55,7 @@ JMP = 50
 RET = 51
 JZ = 52
 JNZ = 53
+CALL = 54
 CMP = 60
 INC = 70
 DEC = 71
@@ -73,6 +75,7 @@ opcodes = {
     PUSHR: "Push Register",
     POP: "Pop",
     JMP: "Jump",
+    CALL: "Call",
     RET: "Return",
     CMP: "Compare",
     INC: "Increase",
