@@ -191,6 +191,19 @@ Interrupts are system calls or built in functions that include but are not limit
 - the string is then written to the memory location the stack pointer is pointer to
 - the stack pointer is increased by the length of the string.
 
+# Debug Functions
+When the DBG instruction is read the virtual machine drops into a command line shell which allows you to:
+- Show registers - r or registers
+- Show stack - s or stack
+- Continue execution - c or continue
+- Step execution - st or step
+- Dump memory to file - d or dump <filename>
+
+```
+DEBUG MODE
+Debug:11>
+```
+The command line shows the current instruction pointer and which mode the VM is currently in
 # Examples
 
 
