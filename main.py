@@ -273,20 +273,20 @@ class SimpleVM:
                 #get operands
                 dest = self.fetch()
                 src = self.fetch()
-                sum = int(self.registers[dest]) + int(self.registers[src])
+                calc = int(self.registers[dest]) + int(self.registers[src])
                 print(f"Adding R{dest}({self.registers[dest]}) to R{value}({self.registers[src]})")
-                self.registers[dest] = sum
+                self.registers[dest] = calc
 
             elif instruction == SUB:
                 #get operands
                 dest = self.fetch()
                 src = self.fetch()
-                sum = int(self.registers[dest]) - int(self.registers[src])
+                calc = int(self.registers[dest]) - int(self.registers[src])
                 print(f"Subtracting R{dest}({self.registers[dest]}) from R{src}({self.registers[src]})")
-                if sum <= 0:
+                if calc <= 0:
                     self.flags[ZF] = True
                     print("Zero flag was set")
-                self.registers[dest] = sum
+                self.registers[dest] = calc
 
             elif instruction == PUSH: #push instruction
                 #get operands
