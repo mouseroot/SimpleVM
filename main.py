@@ -66,6 +66,8 @@ DEC = 71
 
 ENTER = 90
 LEAVE = 91
+CDF = 92
+CLF = 93
 BRK = 99
 DBG = 100
 NOP = 255
@@ -75,30 +77,43 @@ opcodes = {
     LOAD: "Load",
     MOV: "Move",
     ADD: "Add",
+    SUB: "Sub",
+    INC: "Increase",
+    DEC: "Decrease",
+    BRK: "Break",
+
+    DBG: "Debug",
+    CMP: "Compare",
+    JMP: "Jump",
+    JZ: "Jump if Zero",
+    JNZ: "Jump if Not Zero",
+    JE: "Jump if Equal",
+    JNE: "Jump if Not Equal",
+
     PUSH: "Push",
     PUSHR: "Push Register",
     POP: "Pop",
-    JMP: "Jump",
+
     CALL: "Call",
     RET: "Return",
-    CMP: "Compare",
-    INC: "Increase",
-    DEC: "Decrease",
     ENTER: "Enter Frame",
     LEAVE: "Leave Frame",
-    BRK: "Break"
+    
+    CDF: "Change Direction Flag",
+    CLF: "Clear Flags"
 }
 
-R0 = r1 = 0
-R1 = r2 = 1
-R2 = r3 = 2
-R3 = r4 = 3
-
+R0 = 0
+R1 = 1
+R2 = 2
+R3 = 3
 SP = 4
+
 NULL = 0
 
 EF = 0 #equal flag
 ZF = 1 #zero flag
+DF = 2 #direction flag
 
 
 
@@ -134,6 +149,7 @@ class SimpleVM:
         print("Flags: ")
         print("Zero: ",self.flags[ZF])
         print("Equal: ",self.flags[EF])
+        print("Direction: ", self.flags[DF])
 
     def display_stack(self):
         print("Stack: ")
