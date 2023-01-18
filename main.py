@@ -155,6 +155,13 @@ class SimpleVM:
                 print()
         print()
 
+    def fill_memory(self, value):
+        for i in range(len(self.memory)):
+            if type(value) == str:
+                self.memory[i] = ord(value)
+            elif type(value) == int:
+                self.memory[i] = value
+
     def call_interupt(self, interupt_id):
         if interupt_id == PRINT_CHAR:
             ch = self.memory[self.get_stackpointer()]
@@ -171,6 +178,8 @@ class SimpleVM:
             input_line = input("? ")
             self.write_string_at(self.get_stackpointer(),input_line)
             self.registers[SP] += len(input_line)
+            self.memory[self.get_stackpointer()] = NULL
+            self.registers[SP] += 1
 
 
     def print_flags(self):
@@ -439,6 +448,7 @@ program = [
     IR,READ_LINE,       # Read input
     MOV, SP, R0,        # Restore stack pointer from R0
     IR, PRINT_STRING,   # Call print string
+    MOV, SP, R0,        # Restore again
     DBG,
     BRK
 ]
@@ -453,14 +463,11 @@ func_program = [
 
 
 vm = SimpleVM(memory_size=1024,stack_location=700)
+vm.fill_memory(NOP)
 #vm.load_program(program)
 #vm.load_program_at(300,func_program)
 vm.load_program(program)
-vm.write_string_at(150,"SimpleVM")
+#vm.write_string_at(150,"SimpleVM")
+
 vm.verbose_debug = False
-try:
-    vm.run()
-except IndexError:
-    print("Err")
-except KeyboardInterrupt:
-    print("Control-C")
+vm.run()
