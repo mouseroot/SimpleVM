@@ -168,6 +168,12 @@ class SimpleVM:
         self.registers[R1] = self.popValue()
         self.registers[R0] = self.popValue()
 
+    def debug_prompt(self):
+        while 1:
+            command = input(f"Debug:{self.ip}>")
+            print(f"Command was {command}")
+            break
+
     def run(self):
         while self.ip <= len(self.memory):
             instruction = self.fetch()
@@ -185,7 +191,7 @@ class SimpleVM:
 
             elif instruction == DBG:
                 print("DEBUG MODE")
-                self.debug()
+                self.debug_prompt()
                 break
 
             elif instruction == CMP:
@@ -295,6 +301,7 @@ class SimpleVM:
 
 
 program = [
+    NOP,
     PUSH, 4,
     RET,
     DBG,
