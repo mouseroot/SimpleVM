@@ -39,6 +39,8 @@ BRK - Break
 
 DBG - Print Debug info
 
+CALL - Runs a function and returns to the location from where it was called from.
+
 Registers
 ----
 R0 - Register 0
@@ -52,9 +54,10 @@ R3 - Register 3
 SP - Stack Pointer
 
 
-
 Flags:
 -------
 EF - Equal Flag
 
 ZF - Zero Flag
+
+DF - Direction Flag
