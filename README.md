@@ -52,7 +52,15 @@ JNZ - Jump if Zero Flag not set
 ```
     jnz 122
 ```
-CMP - Compare registers and set zero flag
+JE - Jump if Equal Flag set
+```
+    je 312
+```
+JNE - Jump if Equal Flag not set
+```
+    jne 130
+```
+CMP - Compare registers and set zero flag and equal flag
 ```
     cmp R0,R3
 ```
@@ -70,11 +78,11 @@ LEAVE - pop all registers
     ...
     leave
 ```
-CALL - Runs a function and returns to the location from where it was called from.
+CALL - Runs a function and returns to the location from where it was called from, it does this by storing the location AFTER the call to return to when the RET instruction is read.
 ```
     call 456
 ```
-RET - Jump to location at sp
+RET - Jump to location at stack pointer
 ```
     ...
     ret
@@ -93,6 +101,18 @@ POP - Pop value off stack into register
 ```
     pop R0
 ```
+
+## Flag Instructions
+---
+CDF - Change Direction Flag
+```
+    CDF 0
+```
+CLF - Clear Flags
+```
+    CLF
+```
+
 # Registers
 
 R0 - Register 0
@@ -109,12 +129,28 @@ SP - Stack Pointer
 # Flags:
 
 EF - Equal Flag
-
+```
+    Set by the CMP instruction
+    
+    This is used to determine if a conditional jump is made or not
+```
 ZF - Zero Flag
+```
+    Set by the CMP and DEC instructions
+    
+    This is used to determine if a conditional jump is made or not
+```
 
 DF - Direction Flag
+```
+    Set by the CDF instruction (Change Direction Flag)
+    
+    Used by read instructions to determine how the data is read
+    0 or False - Forward ++
+    1 or True - Backwards --
+```
 
-# Examples:
+# Examples
 
 
 ### A simple loop
