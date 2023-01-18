@@ -37,6 +37,10 @@ DBG - Print Debug info
 ```
     dbg
 ```
+IR - Invoke Interrupt
+```
+    IR PRINT_STRING
+```
 
 ## Conditional Instrucutions
 ---
@@ -162,6 +166,30 @@ DF - Direction Flag
     0 or False - Forward ++
     1 or True - Backwards --
 ```
+
+# Interrupts
+
+Interrupts are system calls or built in functions that include but are not limited to:
+- writing to the screen
+- reading input
+- opening, reading and checking if files exist
+- sockets
+- requests
+- raw exec
+
+## 01 - PRINT_CHAR 
+- Prints the character at the memory location the stack pointer is pointing to.
+- Does NOT incriment the stack pointer
+
+## 02 - PRINT_STRING 
+- Prints chars to the screen at the memory location the stack pointer is pointing to
+- increments untill a NULL value is found
+- a newline character is printed to terminate the string
+
+## 03 - READ_LINE 
+- Reads a line from standard input, this includes spaces, up to and NOT including the newline character, 
+- the string is then written to the memory location the stack pointer is pointer to
+- the stack pointer is increased by the length of the string.
 
 # Examples
 
