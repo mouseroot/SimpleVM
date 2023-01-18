@@ -4,12 +4,12 @@ A very basic Virtual Machine written in python
 
 ---
 LOAD - Load a value
-```assembler
+```
     load R0,100
 ```
 
 MOV - Move register A into B
-```assembler
+```
     mov R0, R1
 ```
 ADD - Add registers
@@ -29,7 +29,7 @@ PUSHR - Push register
     pushr R0
 ```
 POP - Pop value off stack into register
-```python
+```
     pop R0
 ```
 JMP - Jump to location

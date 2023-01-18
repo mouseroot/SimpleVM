@@ -56,6 +56,9 @@ RET = 51
 JZ = 52
 JNZ = 53
 CALL = 54
+JE = 55
+JNE = 56
+
 CMP = 60
 INC = 70
 DEC = 71
@@ -230,7 +233,7 @@ class SimpleVM:
                 #get operands
                 location = self.fetch()
                 if not self.flags[ZF]:
-                    print(f"Jumping(NOT ZF) to {location}")
+                    print(f"Jumping(Not ZF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -244,6 +247,22 @@ class SimpleVM:
                 else:
                     pass
 
+            elif instruction == JE:
+                #get operands
+                location = self.fetch()
+                if self.flags[EF]:
+                    print(f"Jumping (EF) to {location}")
+                    self.ip = location
+                else:
+                    pass
+
+            elif instruction == JNE:
+                #get operands
+                pos = self.fetch()
+                if not self.flags[EF]:
+                    print(f"Jumping (Not EF) to {pos}")
+                else:
+                    pass
             elif instruction == ADD: # add instruction
                 #get operands
                 dest = self.fetch()
