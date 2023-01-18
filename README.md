@@ -115,15 +115,28 @@ CLF - Clear Flags
 
 # Registers
 
-R0 - Register 0
+R0 - Register 0 or A
+```
+    A general purpose register
+```
 
-R1 - Register 1
+R1 - Register 1 or B
+```
+    A general purpose register
+```
+R2 - Register 2 or C
+```
+    GPR, Counter
+```
 
-R2 - Register 2
-
-R3 - Register 3
-
+R3 - Register 3 or D
+```
+    GPR, Return Value
+```
 SP - Stack Pointer
+```
+    Stack Pointer only
+```
 
 
 # Flags:
