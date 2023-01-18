@@ -175,13 +175,18 @@ class SimpleVM:
         self.registers[R0] = self.pop_value()
 
     def debug_prompt(self):
-        while 1:
-            command = input(f"Debug:{self.ip}>")
-            print(f"Command was {command}")
-            break
+        while True:
+            read_line = input(f"Debug:{self.ip}>")
+            print(f"Command was {read_line}")
+            commands = read_line.split(" ")
+            command = commands[0]
+            if command == "continue" or command == "c":
+                break
+            else:
+                print(f"Unknown command ({command})")
 
     def run(self):
-        while self.ip <= len(self.memory):
+        while self.ip < len(self.memory):
             instruction = self.fetch()
 
             if instruction == LOAD: # load instruction
@@ -266,8 +271,21 @@ class SimpleVM:
                 pos = self.fetch()
                 if not self.flags[EF]:
                     print(f"Jumping (Not EF) to {pos}")
+                    self.ip = pos
                 else:
                     pass
+
+            elif instruction == INC:
+                #get operands
+                dest = self.fetch()
+                self.registers[dest] += 1
+                print(f"increase R{dest}")
+
+            elif instruction == DEC:
+                #get operands
+                dest = self.fetch()
+                self.registers[dest] -= 1
+                print(f"decrease R{dest}")
 
             elif instruction == ADD: # add instruction
                 #get operands
@@ -330,7 +348,14 @@ class SimpleVM:
 
 
 program = [
+    LOAD, R0, 0,
+    LOAD, R1, 5,
+    INC, R0,
+    CMP, R0, R1,
+    JE,15,
+    JNE,6,
     DBG,
+    JMP, 0,
     BRK
 ]
 
