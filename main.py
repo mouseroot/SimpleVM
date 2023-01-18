@@ -98,7 +98,7 @@ opcodes = {
     RET: "Return",
     ENTER: "Enter Frame",
     LEAVE: "Leave Frame",
-    
+
     CDF: "Change Direction Flag",
     CLF: "Clear Flags"
 }
@@ -136,6 +136,10 @@ class SimpleVM:
     def load_program_at(self, start_position, source):
         for i, instruction in enumerate(source):
             self.memory[start_position + i] = instruction
+
+    def write_string_at(self, pos, string):
+        for i,s in enumerate(string):
+            self.memory[pos + i] = ord(s)
 
     def display_memory(self):
         print("Memory: ")
@@ -370,7 +374,7 @@ class SimpleVM:
                     print(f"Popping value ({value})")
                 
             elif instruction == PUSHR:
-                #get operands
+                #get operand
                 dest = self.fetch()
                 self.memory[self.get_stackpointer()] = self.registers[dest]
                 if self.verbose_debug:
@@ -422,8 +426,10 @@ func_program = [
 
 
 vm = SimpleVM(memory_size=1024,stack_location=900)
-vm.load_program(program)
-vm.load_program_at(300,func_program)
+#vm.load_program(program)
+#vm.load_program_at(300,func_program)
+vm.write_string_at(0,"SimpleVM")
+print(vm.memory[0:15])
 vm.verbose_debug = True
 try:
     vm.run()
