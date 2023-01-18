@@ -435,10 +435,10 @@ class SimpleVM:
 
 
 program = [
-    MOV, R0, SP, #Move the stack pointer into R0
-    IR,READ_LINE,   #Read input
-    MOV, SP, R0,    #Restore stack pointer from R0
-    IR, PRINT_STRING,   #Call print string
+    MOV, R0, SP,        # Move the stack pointer into R0
+    IR,READ_LINE,       # Read input
+    MOV, SP, R0,        # Restore stack pointer from R0
+    IR, PRINT_STRING,   # Call print string
     DBG,
     BRK
 ]
