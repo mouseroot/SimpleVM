@@ -110,6 +110,7 @@ class SimpleVM:
         self.ip = 0 # instruction pointer
         self.registers[SP] = stack_location # stack pointer
         self.flags = [0] * 2
+        self.verbose_debug = True
 
 
     def load_program(self, source):
@@ -181,13 +182,14 @@ class SimpleVM:
     def debug_prompt(self):
         while True:
             read_line = input(f"Debug:{self.ip}>")
-            print(f"Command was {read_line}")
             commands = read_line.split(" ")
             command = commands[0]
             if command == "continue" or command == "c":
                 break
             elif command == "registers" or command == "r":
                 print(f"Registers: {self.registers}")
+            elif command == "stack" or command == "s":
+                self.display_stack()
             else:
                 print(f"Unknown command ({command})")
 
@@ -199,10 +201,8 @@ class SimpleVM:
                 # get operands
                 dest = self.fetch()
                 value = self.fetch()
-                print(f"Loading {value} into R{dest}")
-                if dest > len(self.registers):
-                    print("Invalid register index")
-                    continue
+                if self.verbose_debug:
+                    print(f"Loading {value} into R{dest}")
                 # execute instruction
                 self.registers[dest] = value
 
@@ -215,25 +215,30 @@ class SimpleVM:
                 #get operands
                 dest = self.fetch()
                 src = self.fetch()
-                print(f"Compare: R{dest} vs. R{src}")
+                if self.verbose_debug:
+                    print(f"Compare: R{dest} vs. R{src}")
                 if self.registers[dest] == self.registers[src]:
                     self.flags[EF] = True
-                    print(f"CMP: EF Set")
+                    if self.verbose_debug:
+                        print(f"CMP: EF Set")
                 if self.registers[src] == 0:
                     self.flags[ZF] = True
-                    print(f"CMP ZF Set")
+                    if self.verbose_debug:
+                        print(f"CMP ZF Set")
 
             elif instruction == MOV:
                 dest = self.fetch()
                 src = self.fetch()
-                print(f"Moving R{src}({self.registers[src]}) into R{dest}")
+                if self.verbose_debug:
+                    print(f"Moving R{src}({self.registers[src]}) into R{dest}")
                 self.registers[dest] = self.registers[src]
 
             elif instruction == JMP:
                 #get operands
                 value = self.fetch()
                 self.ip = value
-                print(f"Jump to {value}")
+                if self.verbose_debug:
+                    print(f"Jump to {value}")
                 #input("Enter to continue..")
                 #self.debug()
 
@@ -243,13 +248,15 @@ class SimpleVM:
             elif instruction == RET:
                 location = self.pop_value()
                 self.ip = location
-                print(f"Returning to {location}")
+                if self.verbose_debug:
+                    print(f"Returning to {location}")
 
             elif instruction == JNZ:
                 #get operands
                 location = self.fetch()
                 if not self.flags[ZF]:
-                    print(f"Jumping(Not ZF) to {location}")
+                    if self.verbose_debug:
+                        print(f"Jumping(Not ZF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -258,7 +265,8 @@ class SimpleVM:
                 #get operands
                 location = self.fetch()
                 if self.flags[ZF]:
-                    print(f"Jumping(ZF) to {location}")
+                    if self.verbose_debug:
+                        print(f"Jumping(ZF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -267,7 +275,8 @@ class SimpleVM:
                 #get operands
                 location = self.fetch()
                 if self.flags[EF]:
-                    print(f"Jumping (EF) to {location}")
+                    if self.verbose_debug:
+                        print(f"Jumping (EF) to {location}")
                     self.ip = location
                 else:
                     pass
@@ -276,7 +285,8 @@ class SimpleVM:
                 #get operands
                 pos = self.fetch()
                 if not self.flags[EF]:
-                    print(f"Jumping (Not EF) to {pos}")
+                    if self.verbose_debug:
+                        print(f"Jumping (Not EF) to {pos}")
                     self.ip = pos
                 else:
                     pass
@@ -285,20 +295,23 @@ class SimpleVM:
                 #get operands
                 dest = self.fetch()
                 self.registers[dest] += 1
-                print(f"increase R{dest}")
+                if self.verbose_debug:
+                    print(f"increase R{dest}")
 
             elif instruction == DEC:
                 #get operands
                 dest = self.fetch()
                 self.registers[dest] -= 1
-                print(f"decrease R{dest}")
+                if self.verbose_debug:
+                    print(f"decrease R{dest}")
 
             elif instruction == ADD: # add instruction
                 #get operands
                 dest = self.fetch()
                 src = self.fetch()
                 calc = int(self.registers[dest]) + int(self.registers[src])
-                print(f"Adding R{dest}({self.registers[dest]}) to R{value}({self.registers[src]})")
+                if self.verbose_debug:
+                    print(f"Adding R{dest}({self.registers[dest]}) to R{value}({self.registers[src]})")
                 self.registers[dest] = calc
 
             elif instruction == SUB:
@@ -306,17 +319,20 @@ class SimpleVM:
                 dest = self.fetch()
                 src = self.fetch()
                 calc = int(self.registers[dest]) - int(self.registers[src])
-                print(f"Subtracting R{dest}({self.registers[dest]}) from R{src}({self.registers[src]})")
+                if self.verbose_debug:
+                    print(f"Subtracting R{dest}({self.registers[dest]}) from R{src}({self.registers[src]})")
                 if calc <= 0:
                     self.flags[ZF] = True
-                    print("Zero flag was set")
+                    if self.verbose_debug:
+                        print("Zero flag was set")
                 self.registers[dest] = calc
 
             elif instruction == PUSH: #push instruction
                 #get operands
                 value = self.fetch()
                 self.memory[self.get_stackpointer()] = value
-                print(f"Pushing {value}")
+                if self.verbose_debug:
+                    print(f"Pushing {value}")
                 self.registers[SP] += 1
 
             elif instruction == POP: #pop instruction
@@ -325,29 +341,35 @@ class SimpleVM:
                 self.registers[SP] -= 1
                 value = self.memory[self.get_stackpointer()]
                 self.registers[dest] = value
-                print(f"Popping value ({value})")
+                if self.verbose_debug:
+                    print(f"Popping value ({value})")
                 
             elif instruction == PUSHR:
                 #get operands
                 dest = self.fetch()
                 self.memory[self.get_stackpointer()] = self.registers[dest]
-                print(f"Pushing register R{dest}({self.registers[dest]})")
+                if self.verbose_debug:
+                    print(f"Pushing register R{dest}({self.registers[dest]})")
                 self.registers[SP] += 1
 
 
             elif instruction == BRK:
-                print("Break")
+                if self.verbose_debug:
+                    print("Break")
                 break
 
             elif instruction == ENTER:
-                print("Enter Frame(Push all Registers)")
+                if self.verbose_debug:
+                    print("Enter Frame(Push all Registers)")
                 self.enter_frame()
 
             elif instruction == LEAVE:
-                print("Exit Frame (Pop all Registers)")
+                if self.verbose_debug:
+                    print("Exit Frame (Pop all Registers)")
                 self.leave_frame()
             else:
-                print("Invalid instruction")
+                if self.verbose_debug:
+                    print("Invalid instruction")
                 break
         print("End of Memory was Reached")
             
