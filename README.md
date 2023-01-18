@@ -212,6 +212,7 @@ Interrupts are system calls or built in functions that include but are not limit
     vm.run()
 
 ```
+
 ### Calling a function
 ```python
 
@@ -235,5 +236,21 @@ Interrupts are system calls or built in functions that include but are not limit
     vm = SimpleVM(memory_size=1024,stack_location=900)
     vm.load_program(program)
     vm.load_program_at(300,func_program)
+    vm.run()
+```
+
+### Using Interrupts to Read and Print strings
+```python
+    program = [
+        MOV, R0, SP,        # Move the stack pointer into R0
+        IR,READ_LINE,       # Read input
+        MOV, SP, R0,        # Restore stack pointer from R0
+        IR, PRINT_STRING,   # Call print string
+        DBG,
+        BRK
+    ]
+
+    vm = SimpleVM(memory_size=1024,stack_location=255)
+    vm.load_program(program)
     vm.run()
 ```
