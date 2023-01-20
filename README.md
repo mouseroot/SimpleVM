@@ -36,6 +36,13 @@ SUB
 ```
     sub R0, R1
 ```
+MUL
+- Multiply two registers
+- (A = A * B)
+- Store the sum into A
+```
+    mul R0,R2
+```
 INC 
 - Increase register by 1
 ```
