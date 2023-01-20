@@ -6,6 +6,7 @@ LOAD - Load a value
 MOV - Move register A into B
 ADD - Add registers
 SUB - Subtract registers
+MUL - Multiply registers
 PUSH - Push immediate value
 PUSHR - Push register
 POP - Pop value off stack into register
@@ -49,6 +50,7 @@ LOAD = 10
 MOV = 11
 ADD = 20
 SUB = 21
+MUL = 22
 PUSH = 30
 PUSHR = 31
 POP = 40
@@ -83,6 +85,7 @@ opcodes = {
     MOV: "Move",
     ADD: "Add",
     SUB: "Sub",
+    MUL: "Mul",
     INC: "Increase",
     DEC: "Decrease",
     BRK: "Break",
@@ -166,6 +169,7 @@ class SimpleVM:
         if interupt_id == PRINT_CHAR:
             ch = self.memory[self.get_stackpointer()]
             print(chr(ch),end='')
+
         elif interupt_id == PRINT_STRING:
             i = 0
             ch = self.memory[self.get_stackpointer() + i]
@@ -394,6 +398,15 @@ class SimpleVM:
                     if self.verbose_debug:
                         print("Zero flag was set")
                 self.registers[dest] = calc
+
+            elif instruction == MUL:
+                dest = self.fetch()
+                src = self.fetch()
+                calc = int(self.registers[dest]) * int(self.registers[src])
+                if self.verbose_debug:
+                    print(f"Miltiply R{dest} with R{src}")
+                self.registers[dest] = calc
+
 
             elif instruction == PUSH: #push instruction
                 #get operands
