@@ -25,10 +25,17 @@ CALL - Execute function
 
 --------------------------
 Registers:
-R0 - Register 0
-R1 - Register 1
-R2 - Register 2
-R3 - Register 3
+R1 - Register 0
+R2 - Register 1
+R3 - Register 2
+R4 - Register 3
+AC - Accumulator
+R5 - Register A
+R6 - Register B
+R7 - Register C
+R8 - Register D
+
+FP - Frame Pointer
 SP - Stack Pointer
 
 -------------------------
@@ -66,12 +73,11 @@ CMP = 60
 INC = 70
 DEC = 71
 
-ENTER = 90
-LEAVE = 91
 CDF = 92
 CLF = 93
 BRK = 99
 DBG = 100
+HLT = 101
 NOP = 255
 IR = 7
 
@@ -105,20 +111,27 @@ opcodes = {
 
     CALL: "Call",
     RET: "Return",
-    ENTER: "Enter Frame",
-    LEAVE: "Leave Frame",
 
     CDF: "Change Direction Flag",
     CLF: "Clear Flags"
 }
 
-R0 = 0
+AC = 0
 R1 = 1
 R2 = 2
 R3 = 3
-SP = 4
+R4 = 4
+
+R5 = 5
+R6 = 6
+R7 = 7
+R8 = 8
+
+SP = 9
+FP = 10
 
 NULL = 0
+
 
 EF = EQUAL_FLAG =  0 #equal flag
 ZF = ZERO_FLAG =  1 #zero flag
@@ -131,11 +144,13 @@ DF = DIR_FLAG =  2 #direction flag
 class SimpleVM:
     def __init__(self,memory_size=100,stack_location=75):
         self.memory = [0] * memory_size # 100 bytes of memory
-        self.registers = [0] * 5 # 5 registers
+        self.registers = [0] * 11 # 10 registers
         self.ip = 0 # instruction pointer
         self.registers[SP] = stack_location # stack pointer
-        self.flags = [0] * 2
+        self.registers[FP] = self.registers[SP]
+        self.flags = [0] * 3
         self.verbose_debug = True
+        self.frame_size = 0
 
 
     def load_program(self, source):
@@ -194,7 +209,7 @@ class SimpleVM:
 
     def display_stack(self):
         print("Stack: ")
-        for index, value in enumerate(self.memory[self.get_stackpointer()-1::-1]):
+        for index, value in enumerate(self.memory[self.get_stackpointer()-1:self.get_stackpointer()-50:-1]):
             print(f"{value:02} ",end="")
             if (index+1) % 8 == 0:
                 print()
@@ -204,6 +219,7 @@ class SimpleVM:
     def debug(self):
         print("Registers: ", self.registers)
         print("SP: ",self.get_stackpointer())
+        print("FP", self.registers[FP])
         self.print_flags()
         self.display_stack()
 
@@ -215,39 +231,117 @@ class SimpleVM:
     def get_stackpointer(self):
         return self.registers[SP]
 
+    def get_framepointer(self):
+        return self.registers[FP]
+
     def pop_value(self):
         self.registers[SP] -= 1
         value = self.memory[self.get_stackpointer()]
+        self.frame_size -= 1
         return value
+
+    def preview_pop(self):
+        return self.memory[self.get_stackpointer() + 1]
 
     def push_value(self, value):
         self.memory[self.get_stackpointer()] = value
         self.registers[SP] += 1
+        self.frame_size += 1
         
 
-    def enter_frame(self):
-        self.push_value(self.registers[R0])
+    def push_state(self):
+        print(f"Push State")
         self.push_value(self.registers[R1])
         self.push_value(self.registers[R2])
         self.push_value(self.registers[R3])
+        self.push_value(self.registers[R4])
+        self.push_value(self.registers[R5])
+        self.push_value(self.registers[R6])
+        self.push_value(self.registers[R7])
+        self.push_value(self.registers[R8])
+        instruction_pointer = self.ip
+        self.push_value(instruction_pointer)
+        print(f"ip: ",instruction_pointer)
+        nFrameSize = self.frame_size
+        self.push_value(nFrameSize)
+        print(f"frame size: ", nFrameSize)
+        self.registers[FP] = self.registers[SP]
+        self.frame_size = 0
 
-    def leave_frame(self):
+
+    def pop_state(self):
+        print(f"Pop State")
+        fpAddres = self.registers[FP]
+        self.registers[SP] = fpAddres
+        nFrameSize = self.pop_value()
+        self.frame_size = nFrameSize
+        print("frame size: ",nFrameSize)
+
+        nIP = self.pop_value()
+        self.ip = nIP
+        print("ip: ",nIP)
+        self.registers[R8] = self.pop_value()
+        self.registers[R7] = self.pop_value()
+        self.registers[R6] = self.pop_value()
+        self.registers[R5] = self.pop_value()
+        self.registers[R4] = self.pop_value()
         self.registers[R3] = self.pop_value()
         self.registers[R2] = self.pop_value()
         self.registers[R1] = self.pop_value()
-        self.registers[R0] = self.pop_value()
+        self.registers[FP] = int(fpAddres + nFrameSize)
+        nArgs = self.pop_value()
+        print(f"args: {nArgs}")
+        for i in range(nArgs):
+            pValue = self.pop_value()
+            print(f"Popping Var: {pValue}")
 
     def debug_prompt(self):
         while True:
             read_line = input(f"Debug:{self.ip}>")
             commands = read_line.split(" ")
             command = commands[0]
+            
             if command == "continue" or command == "c":
                 break
             elif command == "registers" or command == "r":
-                print(f"Registers: {self.registers}")
+                print("Registers:")
+                try:
+                    print(f"IP: {self.ip} -> {opcodes[self.ip]}")
+                except KeyError:
+                    print(f"IP: {self.ip} -> {self.memory[self.ip]}")
+                print(f"R1: {self.registers[R1]}")
+                print(f"R2: {self.registers[R2]}")
+                print(f"R3: {self.registers[R3]}")
+                print(f"R4: {self.registers[R4]}")
+                print(f"R5: {self.registers[R5]}")
+                print(f"R6: {self.registers[R6]}")
+                print(f"R7: {self.registers[R7]}")
+                print(f"R8: {self.registers[R8]}")
+                print(f"AC: {self.registers[AC]}")
+                print(f"SP: {self.registers[SP]} -> {self.memory[self.get_stackpointer()]}")
+                print(f"FP: {self.registers[FP]} -> {self.memory[self.registers[FP]]}")
+
+            elif command == "frame" or command == "f":
+                print("Frame Size: ",self.frame_size)
+                print("Frame Pointer: ", self.registers[FP])
+                fp = self.registers[FP]
+                for index, item in enumerate(self.memory[fp + 2:fp - 2:-1]):
+                    print(f"Frame+{index}: {item}")
+
             elif command == "stack" or command == "s":
-                self.display_stack()
+                sp = self.get_stackpointer()
+                print("Stack Pointer: ",sp)
+                print(self.memory[sp:sp+7])
+                
+            elif command == "memory" or command == "m":
+                if len(command) >= 2:
+                    arg = int(commands[1])
+                    print(self.memory[arg:arg+10])
+                else:
+                    print(self.memory)
+            elif command == "quit" or command == "q":
+                self.ip = len(self.memory)
+                break
             else:
                 print(f"Unknown command ({command})")
 
@@ -265,7 +359,6 @@ class SimpleVM:
                 self.registers[dest] = value
 
             elif instruction == DBG:
-                print("DEBUG MODE")
                 self.debug_prompt()
 
             elif instruction == IR:
@@ -307,21 +400,22 @@ class SimpleVM:
 
             elif instruction == CALL:
                 #get operands
-                self.push_value(self.ip+1) #store IP + 2 on stack
                 location = self.fetch()
-                self.ip = location
                 if self.verbose_debug:
                     print(f"Calling function at {location}")
+                self.push_state()
+                self.ip = location
+
                 
 
             elif instruction == NOP:
                 pass
 
             elif instruction == RET:
-                location = self.pop_value()
-                self.ip = location
+                self.pop_state()
+                return_ip = self.ip
                 if self.verbose_debug:
-                    print(f"Returning to {location}")
+                    print(f"Returning to {return_ip}")
 
             elif instruction == JNZ:
                 #get operands
@@ -411,43 +505,29 @@ class SimpleVM:
             elif instruction == PUSH: #push instruction
                 #get operands
                 value = self.fetch()
-                self.memory[self.get_stackpointer()] = value
+                self.push_value(value)
                 if self.verbose_debug:
                     print(f"Pushing {value}")
-                self.registers[SP] += 1
 
             elif instruction == POP: #pop instruction
                 #get operands
                 dest = self.fetch()
-                self.registers[SP] -= 1
-                value = self.memory[self.get_stackpointer()]
+                value = self.pop_value()
                 self.registers[dest] = value
                 if self.verbose_debug:
-                    print(f"Popping value ({value})")
+                    print(f"Popping value ({value}) into R{dest}")
                 
             elif instruction == PUSHR:
                 #get operand
                 dest = self.fetch()
-                self.memory[self.get_stackpointer()] = self.registers[dest]
+                self.push_value(self.registers[dest])
                 if self.verbose_debug:
                     print(f"Pushing register R{dest}({self.registers[dest]})")
-                self.registers[SP] += 1
-
 
             elif instruction == BRK:
                 if self.verbose_debug:
                     print("Break")
                 break
-
-            elif instruction == ENTER:
-                if self.verbose_debug:
-                    print("Enter Frame(Push all Registers)")
-                self.enter_frame()
-
-            elif instruction == LEAVE:
-                if self.verbose_debug:
-                    print("Exit Frame (Pop all Registers)")
-                self.leave_frame()
             else:
                 if self.verbose_debug:
                     print("Invalid instruction")
@@ -457,30 +537,28 @@ class SimpleVM:
 
 
 program = [
-    MOV, R0, SP,        # Move the stack pointer into R0
-    IR,READ_LINE,       # Read input
-    MOV, SP, R0,        # Restore stack pointer from R0
-    IR, PRINT_STRING,   # Call print string
-    MOV, SP, R0,        # Restore again
+    PUSH, 0,
+    CALL, 300,
     DBG,
-    BRK
+    PUSH, 200,
+    PUSH, 999,
+    POP, R7,
+    JMP,0
 ]
 
 func_program = [
-    ENTER,
-    LOAD, R3, 45,
-    NOP,
-    LEAVE,
+    MOV, R1, FP,
+    DBG,
     RET
 ]
 
 
-vm = SimpleVM(memory_size=1024,stack_location=700)
-vm.fill_memory(NOP)
+vm = SimpleVM(memory_size=1000,stack_location=900)
+#vm.fill_memory(NOP)
 #vm.load_program(program)
-#vm.load_program_at(300,func_program)
+vm.load_program_at(300,func_program)
 vm.load_program(program)
 #vm.write_string_at(150,"SimpleVM")
 
-vm.verbose_debug = False
+vm.verbose_debug = True
 vm.run()
