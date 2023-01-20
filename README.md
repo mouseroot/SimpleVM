@@ -16,7 +16,7 @@ LOAD
 ```
 
 MOV 
-- Move register A into B
+- Move register B into A
 - Copies the value from B
 - Stores the value into A
 ```
