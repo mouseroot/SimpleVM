@@ -107,20 +107,6 @@ CMP
 
 ## Subroutine instructions
 ---
-ENTER 
-- push all registers
-- Pushes R0 through R3 to the stack
-```
-    enter
-    ...
-```
-LEAVE 
-- pop all registers
-- Pops values off the stack into R3 to R0
-```
-    ...
-    leave
-```
 CALL 
 - Runs a function and returns to the location from where it was called from
 - stores the location AFTER the call to the memory location the stack pointer is pointing to

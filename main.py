@@ -53,33 +53,51 @@ Leave Frame
 Pop Registers R3 through R0
 """
 
-LOAD = 10
-MOV = 11
-ADD = 20
-SUB = 21
-MUL = 22
-PUSH = 30
-PUSHR = 31
-POP = 40
-JMP = 50
-RET = 51
-JZ = 52
-JNZ = 53
-CALL = 54
-JE = 55
-JNE = 56
+LOAD = 2    # load imm to registers
+LOADM = 3   # loadm imm to memory
 
-CMP = 60
-INC = 70
-DEC = 71
+MOV = 11    # mov register,register
+MOVM = 12   # movm memory
+MOVMM = 13  # movmm memory,memory
 
-CDF = 92
-CLF = 93
-BRK = 99
-DBG = 100
-HLT = 101
-NOP = 255
-IR = 7
+ADD = 20    # add register,register
+ADDI = 21   # addi register,imm
+
+SUB = 22    # sub register,register
+SUBI = 23   # subi register,imm
+
+MUL = 24    # mul register,register
+MULI = 25   # muli register,imm
+
+PUSH = 30   # push imm
+PUSHR = 31  # pushr register
+PUSHM = 32  # pushm memory
+
+POP = 40    # pop register
+POPM = 41   # popm memory
+
+JMP = 50    # jmp imm
+JMPR = 51   # jmpr register
+RET = 52    # ret
+
+JZ = 53     # jz imm
+JNZ = 54    # jnz imm
+CALL = 55   # call imm
+JE = 56     # je imm
+JNE = 57    # jne imm
+
+CMP = 60    # cmp register,register
+
+INC = 70    # inc imm
+DEC = 71    # dec imm
+
+CDF = 92    # cdf
+CLF = 93    # clf
+BRK = 99    # brk
+DBG = 100   # dbg
+HLT = 101   # hlt
+NOP = 255   # nop
+IR = 7      # ir
 
 PRINT_CHAR = 1
 PRINT_STRING = 2
@@ -478,7 +496,7 @@ class SimpleVM:
                 calc = int(self.registers[dest]) + int(self.registers[src])
                 if self.verbose_debug:
                     print(f"Adding R{dest}({self.registers[dest]}) to R{value}({self.registers[src]})")
-                self.registers[dest] = calc
+                self.registers[AC] = calc
 
             elif instruction == SUB:
                 #get operands
@@ -487,11 +505,7 @@ class SimpleVM:
                 calc = int(self.registers[dest]) - int(self.registers[src])
                 if self.verbose_debug:
                     print(f"Subtracting R{dest}({self.registers[dest]}) from R{src}({self.registers[src]})")
-                if calc <= 0:
-                    self.flags[ZF] = True
-                    if self.verbose_debug:
-                        print("Zero flag was set")
-                self.registers[dest] = calc
+                self.registers[AC] = calc
 
             elif instruction == MUL:
                 dest = self.fetch()
@@ -499,7 +513,7 @@ class SimpleVM:
                 calc = int(self.registers[dest]) * int(self.registers[src])
                 if self.verbose_debug:
                     print(f"Miltiply R{dest} with R{src}")
-                self.registers[dest] = calc
+                self.registers[AC] = calc
 
 
             elif instruction == PUSH: #push instruction
@@ -539,21 +553,24 @@ class SimpleVM:
 program = [
     PUSH, 0,
     CALL, 300,
+    PUSHR, SP,
+    MOV, R5, AC,
+    MOV, SP, R5,
+    IR, PRINT_STRING,
+    POP, SP,
     DBG,
-    PUSH, 200,
-    PUSH, 999,
-    POP, R7,
-    JMP,0
+    JMP, 0
 ]
 
 func_program = [
-    MOV, R1, FP,
-    DBG,
+    MOV, R1, SP,
+    IR, READ_LINE,
+    MOV, AC, R1,
     RET
 ]
 
 
-vm = SimpleVM(memory_size=1000,stack_location=900)
+vm = SimpleVM(memory_size=1000,stack_location=500)
 #vm.fill_memory(NOP)
 #vm.load_program(program)
 vm.load_program_at(300,func_program)
