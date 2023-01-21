@@ -104,6 +104,8 @@ PRINT_STRING = 2
 
 READ_LINE = 3
 
+STRING_COMPARE = 4
+
 opcodes = {
     LOAD: "Load",
     MOV: "Move",
@@ -198,6 +200,17 @@ class SimpleVM:
             elif type(value) == int:
                 self.memory[i] = value
 
+    def read_string(self, address):
+        return_str = ""
+        i = 0
+        ch = self.memory[address]
+        while ch != NULL:
+            ch = self.memory[address + i]
+            i += 1
+            return_str += ch
+        return return_str
+        
+
     def call_interupt(self, interupt_id):
         if interupt_id == PRINT_CHAR:
             ch = self.memory[self.get_stackpointer()]
@@ -217,6 +230,9 @@ class SimpleVM:
             self.registers[SP] += len(input_line)
             self.memory[self.get_stackpointer()] = NULL
             self.registers[SP] += 1
+        elif interupt_id == STRING_COMPARE:
+            strA = ""
+            strB = ""
 
 
     def print_flags(self):
@@ -268,7 +284,8 @@ class SimpleVM:
         
 
     def push_state(self):
-        print(f"Push State")
+        if self.verbose_debug:
+            print(f"Push State")
         self.push_value(self.registers[R1])
         self.push_value(self.registers[R2])
         self.push_value(self.registers[R3])
@@ -279,25 +296,30 @@ class SimpleVM:
         self.push_value(self.registers[R8])
         instruction_pointer = self.ip
         self.push_value(instruction_pointer)
-        print(f"ip: ",instruction_pointer)
+        if self.verbose_debug:
+            print(f"ip: ",instruction_pointer)
         nFrameSize = self.frame_size
         self.push_value(nFrameSize)
-        print(f"frame size: ", nFrameSize)
+        if self.verbose_debug:
+            print(f"frame size: ", nFrameSize)
         self.registers[FP] = self.registers[SP]
         self.frame_size = 0
 
 
     def pop_state(self):
-        print(f"Pop State")
+        if self.verbose_debug:
+            print(f"Pop State")
         fpAddres = self.registers[FP]
         self.registers[SP] = fpAddres
         nFrameSize = self.pop_value()
         self.frame_size = nFrameSize
-        print("frame size: ",nFrameSize)
+        if self.verbose_debug:
+            print("frame size: ",nFrameSize)
 
         nIP = self.pop_value()
         self.ip = nIP
-        print("ip: ",nIP)
+        if self.verbose_debug:
+            print("ip: ",nIP)
         self.registers[R8] = self.pop_value()
         self.registers[R7] = self.pop_value()
         self.registers[R6] = self.pop_value()
@@ -306,12 +328,14 @@ class SimpleVM:
         self.registers[R3] = self.pop_value()
         self.registers[R2] = self.pop_value()
         self.registers[R1] = self.pop_value()
-        self.registers[FP] = int(fpAddres + nFrameSize)
+        self.registers[FP] = int(fpAddres + nFrameSize + 2)
         nArgs = self.pop_value()
-        print(f"args: {nArgs}")
+        if self.verbose_debug:
+            print(f"args: {nArgs}")
         for i in range(nArgs):
             pValue = self.pop_value()
-            print(f"Popping Var: {pValue}")
+            if self.verbose_debug:
+                print(f"Popping Var: {pValue}")
 
     def debug_prompt(self):
         while True:
@@ -343,7 +367,7 @@ class SimpleVM:
                 print("Frame Size: ",self.frame_size)
                 print("Frame Pointer: ", self.registers[FP])
                 fp = self.registers[FP]
-                for index, item in enumerate(self.memory[fp + 2:fp - 2:-1]):
+                for index, item in enumerate(self.memory[fp:fp + self.frame_size]):
                     print(f"Frame+{index}: {item}")
 
             elif command == "stack" or command == "s":
@@ -375,6 +399,13 @@ class SimpleVM:
                     print(f"Loading {value} into R{dest}")
                 # execute instruction
                 self.registers[dest] = value
+            
+            elif instruction == LOADM:
+                mem = self.fetch()
+                value = self.fetch()
+                self.memory[mem] = value
+                if self.verbose_debug:
+                    print(f"Loading {value} into memory {mem}")
 
             elif instruction == DBG:
                 self.debug_prompt()
@@ -498,6 +529,12 @@ class SimpleVM:
                     print(f"Adding R{dest}({self.registers[dest]}) to R{value}({self.registers[src]})")
                 self.registers[AC] = calc
 
+            elif instruction == ADDI:
+                dest = self.fetch()
+                value = self.fetch()
+                calc = int(self.registers[dest]) + value
+                self.registers[AC] = calc
+
             elif instruction == SUB:
                 #get operands
                 dest = self.fetch()
@@ -505,6 +542,13 @@ class SimpleVM:
                 calc = int(self.registers[dest]) - int(self.registers[src])
                 if self.verbose_debug:
                     print(f"Subtracting R{dest}({self.registers[dest]}) from R{src}({self.registers[src]})")
+                self.registers[AC] = calc
+
+            elif instruction == SUBI:
+                #get operands
+                dest = self.fetch()
+                value = self.fetch()
+                calc = int(self.registers[dest]) + value
                 self.registers[AC] = calc
 
             elif instruction == MUL:
@@ -515,6 +559,12 @@ class SimpleVM:
                     print(f"Miltiply R{dest} with R{src}")
                 self.registers[AC] = calc
 
+            elif instruction == MULI:
+                dest = self.fetch()
+                value = self.fetch()
+                calc = int(self.registers[dest]) * value
+                self.registers[AC] = calc
+
 
             elif instruction == PUSH: #push instruction
                 #get operands
@@ -522,6 +572,13 @@ class SimpleVM:
                 self.push_value(value)
                 if self.verbose_debug:
                     print(f"Pushing {value}")
+            
+            elif instruction == PUSHM:
+                mem = self.fetch()
+                value = self.memory[mem]
+                self.push_value(value)
+                if self.verbose_debug:
+                    print(f"Pushing memory {mem} -> {value}")
 
             elif instruction == POP: #pop instruction
                 #get operands
@@ -551,21 +608,18 @@ class SimpleVM:
 
 
 program = [
-    PUSH, 0,
+    LOAD, R2, 2,
+    INC, R2,
     CALL, 300,
-    PUSHR, SP,
-    MOV, R5, AC,
-    MOV, SP, R5,
-    IR, PRINT_STRING,
-    POP, SP,
     DBG,
-    JMP, 0
+    JMP, 3,
+    BRK,
+
 ]
 
 func_program = [
-    MOV, R1, SP,
-    IR, READ_LINE,
-    MOV, AC, R1,
+    POP, R4,
+    DBG,
     RET
 ]
 
